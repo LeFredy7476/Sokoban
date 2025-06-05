@@ -1284,36 +1284,38 @@ const PixiCanvas = () => {
     // manual events, for testing purposes
     React.useEffect(() => {
         document.addEventListener("keydown", function (event) {
-            if (event.key == " ") {
-                event.preventDefault();
-                gameRef.current.receiveEvent("a", "press")
-            } else if (event.key == "Escape") {
-                event.preventDefault();
-                gameRef.current.receiveEvent("b", "press")
-            } else if (event.key == "ArrowLeft") {
-                event.preventDefault();
-                gameRef.current.receiveEvent("left", "press")
-            } else if (event.key == "ArrowRight") {
-                event.preventDefault();
-                gameRef.current.receiveEvent("right", "press")
-            } else if (event.key == "ArrowUp") {
-                event.preventDefault();
-                gameRef.current.receiveEvent("up", "press")
-            } else if (event.key == "ArrowDown") {
-                event.preventDefault();
-                gameRef.current.receiveEvent("down", "press")
-            } else if (event.key == "a") {
-                event.preventDefault();
-                gameRef.current.receiveEvent("left", "press")
-            } else if (event.key == "d") {
-                event.preventDefault();
-                gameRef.current.receiveEvent("right", "press")
-            } else if (event.key == "w") {
-                event.preventDefault();
-                gameRef.current.receiveEvent("up", "press")
-            } else if (event.key == "s") {
-                event.preventDefault();
-                gameRef.current.receiveEvent("down", "press")
+            if (!event.repeat) {
+                if (event.key == " ") {
+                    event.preventDefault();
+                    gameRef.current.receiveEvent("a", "press")
+                } else if (event.key == "Escape") {
+                    event.preventDefault();
+                    gameRef.current.receiveEvent("b", "press")
+                } else if (event.key == "ArrowLeft") {
+                    event.preventDefault();
+                    gameRef.current.receiveEvent("left", "press")
+                } else if (event.key == "ArrowRight") {
+                    event.preventDefault();
+                    gameRef.current.receiveEvent("right", "press")
+                } else if (event.key == "ArrowUp") {
+                    event.preventDefault();
+                    gameRef.current.receiveEvent("up", "press")
+                } else if (event.key == "ArrowDown") {
+                    event.preventDefault();
+                    gameRef.current.receiveEvent("down", "press")
+                } else if (event.key == "a") {
+                    event.preventDefault();
+                    gameRef.current.receiveEvent("left", "press")
+                } else if (event.key == "d") {
+                    event.preventDefault();
+                    gameRef.current.receiveEvent("right", "press")
+                } else if (event.key == "w") {
+                    event.preventDefault();
+                    gameRef.current.receiveEvent("up", "press")
+                } else if (event.key == "s") {
+                    event.preventDefault();
+                    gameRef.current.receiveEvent("down", "press")
+                }
             }
         });
     }, []);
