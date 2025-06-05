@@ -2,10 +2,10 @@ import * as PIXI from 'pixi.js';
 import React from 'react';
 import levels from './levels.json';
 
-const imageScale = 2;
+const imageScale = 3;
 const tileSize = 8 * imageScale;
 const blockSize = 16 * imageScale;
-const imagePath = "/jeu_assets_x" + imageScale + ".png"
+const imagePath = "./jeu_assets_x" + imageScale + ".png"
 
 function clamp(t, min, max) {
     return Math.max(Math.min(max, t), min)
@@ -141,21 +141,41 @@ const tilesetData = {
 			spriteSourceSize: { x: 0, y: 0, w: 41*imageScale, h: 10*imageScale }
         },
         jouer: {
+            frame: { x: 63*imageScale, y: 128*imageScale, w: 48*imageScale, h: 10*imageScale },
+			sourceSize: { w: 48*imageScale, h: 10*imageScale },
+			spriteSourceSize: { x: 0, y: 0, w: 48*imageScale, h: 10*imageScale }
+        },
+        jouer2: {
             frame: { x: 76*imageScale, y: 89*imageScale, w: 41*imageScale, h: 10*imageScale },
 			sourceSize: { w: 41*imageScale, h: 10*imageScale },
 			spriteSourceSize: { x: 0, y: 0, w: 41*imageScale, h: 10*imageScale }
         },
         suivantbtn: {
+            frame: { x: 0*imageScale, y: 128*imageScale, w: 63*imageScale, h: 16*imageScale },
+			sourceSize: { w: 63*imageScale, h: 16*imageScale },
+			spriteSourceSize: { x: 0, y: 0, w: 63*imageScale, h: 16*imageScale }
+        },
+        niveauxbtn: {
+            frame: { x: 0*imageScale, y: 144*imageScale, w: 63*imageScale, h: 16*imageScale },
+			sourceSize: { w: 63*imageScale, h: 16*imageScale },
+			spriteSourceSize: { x: 0, y: 0, w: 63*imageScale, h: 16*imageScale }
+        },
+        jouerbtn: {
+            frame: { x: 0*imageScale, y: 160*imageScale, w: 63*imageScale, h: 16*imageScale },
+			sourceSize: { w: 63*imageScale, h: 16*imageScale },
+			spriteSourceSize: { x: 0, y: 0, w: 63*imageScale, h: 16*imageScale }
+        },
+        suivantbtn2: {
             frame: { x: 0*imageScale, y: 80*imageScale, w: 48*imageScale, h: 16*imageScale },
 			sourceSize: { w: 48*imageScale, h: 16*imageScale },
 			spriteSourceSize: { x: 0, y: 0, w: 48*imageScale, h: 16*imageScale }
         },
-        niveauxbtn: {
+        niveauxbtn2: {
             frame: { x: 0*imageScale, y: 96*imageScale, w: 48*imageScale, h: 16*imageScale },
 			sourceSize: { w: 48*imageScale, h: 16*imageScale },
 			spriteSourceSize: { x: 0, y: 0, w: 48*imageScale, h: 16*imageScale }
         },
-        jouerbtn: {
+        jouerbtn2: {
             frame: { x: 0*imageScale, y: 112*imageScale, w: 48*imageScale, h: 16*imageScale },
 			sourceSize: { w: 48*imageScale, h: 16*imageScale },
 			spriteSourceSize: { x: 0, y: 0, w: 48*imageScale, h: 16*imageScale }
@@ -195,15 +215,22 @@ const tilesetData = {
 			sourceSize: { w: 25*imageScale, h: 20*imageScale },
 			spriteSourceSize: { x: 0, y: 0, w: 25*imageScale, h: 20*imageScale }
         },
+        tutorial1: {
+            frame: { x: 63*imageScale, y: 138*imageScale, w: 65*imageScale, h: 23*imageScale },
+			sourceSize: { w: 65*imageScale, h: 23*imageScale },
+			spriteSourceSize: { x: 0, y: 0, w: 65*imageScale, h: 23*imageScale }
+        },
+        tutorial2: {
+            frame: { x: 63*imageScale, y: 161*imageScale, w: 63*imageScale, h: 15*imageScale },
+			sourceSize: { w: 63*imageScale, h: 15*imageScale },
+			spriteSourceSize: { x: 0, y: 0, w: 63*imageScale, h: 15*imageScale }
+        },
 	},
 	meta: {
-		image: '/jeu_assets_x4.png',
+		image: imagePath,
 		format: 'RGBA8888',
 		size: { w: 128 * imageScale, h: 176 * imageScale },
 		scale: 1
-	},
-	animations: {
-		player: ['player1','player2'] //array of frames by name
 	}
 }
 
@@ -278,7 +305,7 @@ function expFollow( deltaTime, current, target, expFollowRatio = 0.000001 ) {
     return target - new_diff;
 }
 
-const PixiCanvas = ({ castContext }) => {
+const PixiCanvas = () => {
     const canvasRef = React.useRef(null);
     const pixiAppRef = React.useRef(null); // Référence persistante de PIXI.Application
     const spriteRef = React.useRef(null); // Référence à ton sprite principal
@@ -295,6 +322,87 @@ const PixiCanvas = ({ castContext }) => {
             Math.round(window.innerWidth / 2),
             Math.round(window.innerHeight / 2)
         ]
+    }
+
+    class Particle {
+
+        static TYPE1 = "partA2";
+        static TYPE2 = "partA3";
+        static TYPE3 = "partA4";
+        static TYPE4 = "partA5";
+
+        static PARTICLES = [];
+
+        static updateAll(deltaTime) {
+            let list = []
+            for (let i = 0; i < this.PARTICLES.length; i++) {
+                const particle = this.PARTICLES[i];
+                particle.update(deltaTime);
+                if (particle.alive) {
+                    list.push(particle);
+                } else {
+                    particle.destroy();
+                }
+            }
+            this.PARTICLES = list;
+        }
+
+        static add(container, lifetime, startX, startY, endX, endY, partType, rot) {
+            this.PARTICLES.push(new Particle(container, lifetime, startX, startY, endX, endY, partType, rot));
+        }
+        
+        constructor (container, lifetime, startX, startY, endX, endY, partType, rot) {
+            this.lifetime = lifetime;
+            this.startX = startX;
+            this.startY = startY;
+            this.endX = startX + endX;
+            this.endY = startY + endY;
+            this.currentX = startX;
+            this.currentY = startY;
+            this.currentRot = rot;
+            this.start = performance.now();
+            this.end = performance.now() + this.lifetime;
+            this.alive = this.lifetime > 0.0;
+            this.spriteFG = new PIXI.Sprite(spritesheet.current.textures["partA0"]);
+            this.spriteFG.anchor.set(0.5, 0.5);
+            this.spriteBG = new PIXI.Sprite(spritesheet.current.textures["partA1"]);
+            this.spriteBG.anchor.set(0.5, 0.5);
+            this.spriteDS = new PIXI.Sprite(spritesheet.current.textures[partType]);
+            this.spriteDS.anchor.set(0.5, 0.5);
+            this.container = container;
+            this.apply();
+            this.container.addChild(this.spriteBG);
+            this.container.addChild(this.spriteDS);
+            this.container.addChild(this.spriteFG);
+        }
+
+        update(deltaTime) {
+            if (performance.now() > this.end) {
+                this.alive = false;
+            } else {
+                this.currentX = expFollow(deltaTime, this.currentX, this.endX, 0.00001);
+                this.currentY = expFollow(deltaTime, this.currentY, this.endY, 0.00001);
+                this.apply();
+            }
+        }
+
+        apply() {
+            this.spriteFG.x = this.currentX;
+            this.spriteFG.y = this.currentY;
+            this.spriteFG.angle = this.currentRot;
+            this.spriteBG.x = this.currentX;
+            this.spriteBG.y = this.currentY;
+            this.spriteBG.angle = this.currentRot;
+            this.spriteDS.x = this.currentX;
+            this.spriteDS.y = this.currentY + imageScale;
+            this.spriteDS.angle = this.currentRot;
+        }
+
+        destroy() {
+            this.spriteBG.destroy();
+            this.spriteDS.destroy();
+            this.spriteFG.destroy();
+        }
     }
 
     class Player {
@@ -379,11 +487,24 @@ const PixiCanvas = ({ castContext }) => {
                     if (box.pushleft()) {
                         this.move(-1, 0);
                         return true;
+                    } else {
+                        // Particle.add(this.level.sprite, 400, this.screenX + blockSize * -0.5, this.screenY, blockSize * -1.0, blockSize *  0.0, Particle.TYPE2, 0);
+                        // Particle.add(this.level.sprite, 400, this.screenX + blockSize * -0.5, this.screenY, blockSize * -0.8, blockSize * -0.6, Particle.TYPE2, 0 + 30);
+                        // Particle.add(this.level.sprite, 400, this.screenX + blockSize * -0.5, this.screenY, blockSize * -0.8, blockSize *  0.6, Particle.TYPE2, 0 - 30);
+                        Particle.add(this.level.sprite, 400, this.screenX + blockSize * -1.5, this.screenY, blockSize * -1.0, blockSize *  0.0, Particle.TYPE2, 0);
+                        Particle.add(this.level.sprite, 400, this.screenX + blockSize * -1.5, this.screenY, blockSize * -0.8, blockSize * -0.6, Particle.TYPE2, 0 + 30);
+                        Particle.add(this.level.sprite, 400, this.screenX + blockSize * -1.5, this.screenY, blockSize * -0.8, blockSize *  0.6, Particle.TYPE2, 0 - 30);
+                        this.screenX -= imageScale * 4;
                     }
                 } else {
                     this.move(-1, 0);
                     return true;
                 }
+            } else {
+                Particle.add(this.level.sprite, 400, this.screenX + blockSize * -0.5, this.screenY, blockSize * -1.0, blockSize *  0.0, Particle.TYPE2, 0);
+                Particle.add(this.level.sprite, 400, this.screenX + blockSize * -0.5, this.screenY, blockSize * -0.8, blockSize * -0.6, Particle.TYPE2, 0 + 30);
+                Particle.add(this.level.sprite, 400, this.screenX + blockSize * -0.5, this.screenY, blockSize * -0.8, blockSize *  0.6, Particle.TYPE2, 0 - 30);
+                this.screenX -= imageScale * 4;
             }
             return false;
         }
@@ -401,11 +522,24 @@ const PixiCanvas = ({ castContext }) => {
                     if (box.pushright()) {
                         this.move(1, 0);
                         return true;
+                    } else {
+                        // Particle.add(this.level.sprite, 400, this.screenX + blockSize * 0.5, this.screenY, blockSize * 1.0, blockSize *  0.0, Particle.TYPE2, 0);
+                        // Particle.add(this.level.sprite, 400, this.screenX + blockSize * 0.5, this.screenY, blockSize * 0.8, blockSize * -0.6, Particle.TYPE2, 0 - 30);
+                        // Particle.add(this.level.sprite, 400, this.screenX + blockSize * 0.5, this.screenY, blockSize * 0.8, blockSize *  0.6, Particle.TYPE2, 0 + 30);
+                        Particle.add(this.level.sprite, 400, this.screenX + blockSize * 1.5, this.screenY, blockSize * 1.0, blockSize *  0.0, Particle.TYPE2, 0);
+                        Particle.add(this.level.sprite, 400, this.screenX + blockSize * 1.5, this.screenY, blockSize * 0.8, blockSize * -0.6, Particle.TYPE2, 0 - 30);
+                        Particle.add(this.level.sprite, 400, this.screenX + blockSize * 1.5, this.screenY, blockSize * 0.8, blockSize *  0.6, Particle.TYPE2, 0 + 30);
+                        this.screenX += imageScale * 4;
                     }
                 } else {
                     this.move(1, 0);
                     return true;
                 }
+            } else {
+                Particle.add(this.level.sprite, 400, this.screenX + blockSize * 0.5, this.screenY, blockSize * 1.0, blockSize *  0.0, Particle.TYPE2, 0);
+                Particle.add(this.level.sprite, 400, this.screenX + blockSize * 0.5, this.screenY, blockSize * 0.8, blockSize * -0.6, Particle.TYPE2, 0 - 30);
+                Particle.add(this.level.sprite, 400, this.screenX + blockSize * 0.5, this.screenY, blockSize * 0.8, blockSize *  0.6, Particle.TYPE2, 0 + 30);
+                this.screenX += imageScale * 4;
             }
             return false;
         }
@@ -423,11 +557,24 @@ const PixiCanvas = ({ castContext }) => {
                     if (box.pushup()) {
                         this.move(0, -1);
                         return true;
+                    } else {
+                        // Particle.add(this.level.sprite, 400, this.screenX, this.screenY + blockSize * -0.5, blockSize *  0.0, blockSize * -1.0, Particle.TYPE2, 90);
+                        // Particle.add(this.level.sprite, 400, this.screenX, this.screenY + blockSize * -0.5, blockSize * -0.6, blockSize * -0.8, Particle.TYPE2, 90 - 30);
+                        // Particle.add(this.level.sprite, 400, this.screenX, this.screenY + blockSize * -0.5, blockSize *  0.6, blockSize * -0.8, Particle.TYPE2, 90 + 30);
+                        Particle.add(this.level.sprite, 400, this.screenX, this.screenY + blockSize * -1.5, blockSize *  0.0, blockSize * -1.0, Particle.TYPE2, 90);
+                        Particle.add(this.level.sprite, 400, this.screenX, this.screenY + blockSize * -1.5, blockSize * -0.6, blockSize * -0.8, Particle.TYPE2, 90 - 30);
+                        Particle.add(this.level.sprite, 400, this.screenX, this.screenY + blockSize * -1.5, blockSize *  0.6, blockSize * -0.8, Particle.TYPE2, 90 + 30);
+                        this.screenY -= imageScale * 4;
                     }
                 } else {
                     this.move(0, -1);
                     return true;
                 }
+            } else {
+                Particle.add(this.level.sprite, 400, this.screenX, this.screenY + blockSize * -0.5, blockSize *  0.0, blockSize * -1.0, Particle.TYPE2, 90);
+                Particle.add(this.level.sprite, 400, this.screenX, this.screenY + blockSize * -0.5, blockSize * -0.6, blockSize * -0.8, Particle.TYPE2, 90 - 30);
+                Particle.add(this.level.sprite, 400, this.screenX, this.screenY + blockSize * -0.5, blockSize *  0.6, blockSize * -0.8, Particle.TYPE2, 90 + 30);
+                this.screenY -= imageScale * 4;
             }
             return false;
         }
@@ -445,11 +592,24 @@ const PixiCanvas = ({ castContext }) => {
                     if (box.pushdown()) {
                         this.move(0, 1);
                         return true;
+                    } else {
+                        // Particle.add(this.level.sprite, 400, this.screenX, this.screenY + blockSize * 0.5, blockSize *  0.0, blockSize *  1.0, Particle.TYPE2, 90);
+                        // Particle.add(this.level.sprite, 400, this.screenX, this.screenY + blockSize * 0.5, blockSize * -0.6, blockSize *  0.8, Particle.TYPE2, 90 + 30);
+                        // Particle.add(this.level.sprite, 400, this.screenX, this.screenY + blockSize * 0.5, blockSize *  0.6, blockSize *  0.8, Particle.TYPE2, 90 - 30);
+                        Particle.add(this.level.sprite, 400, this.screenX, this.screenY + blockSize * 1.5, blockSize *  0.0, blockSize *  1.0, Particle.TYPE2, 90);
+                        Particle.add(this.level.sprite, 400, this.screenX, this.screenY + blockSize * 1.5, blockSize * -0.6, blockSize *  0.8, Particle.TYPE2, 90 + 30);
+                        Particle.add(this.level.sprite, 400, this.screenX, this.screenY + blockSize * 1.5, blockSize *  0.6, blockSize *  0.8, Particle.TYPE2, 90 - 30);
+                        this.screenY += imageScale * 4;
                     }
                 } else {
                     this.move(0, 1);
                     return true;
                 }
+            } else {
+                Particle.add(this.level.sprite, 400, this.screenX, this.screenY + blockSize * 0.5, blockSize *  0.0, blockSize *  1.0, Particle.TYPE2, 90);
+                Particle.add(this.level.sprite, 400, this.screenX, this.screenY + blockSize * 0.5, blockSize * -0.6, blockSize *  0.8, Particle.TYPE2, 90 + 30);
+                Particle.add(this.level.sprite, 400, this.screenX, this.screenY + blockSize * 0.5, blockSize *  0.6, blockSize *  0.8, Particle.TYPE2, 90 - 30);
+                this.screenY += imageScale * 4;
             }
             return false;
         }
@@ -518,7 +678,11 @@ const PixiCanvas = ({ castContext }) => {
                 if (!box) {
                     this.move(-1, 0);
                     return true;
+                } else {
+                    this.screenX -= imageScale * 2;
                 }
+            } else {
+                this.screenX -= imageScale * 2;
             }
             return false;
         }
@@ -535,7 +699,11 @@ const PixiCanvas = ({ castContext }) => {
                 if (!box) {
                     this.move(1, 0);
                     return true;
+                } else {
+                    this.screenX += imageScale * 2;
                 }
+            } else {
+                this.screenX += imageScale * 2;
             }
             return false;
         }
@@ -552,7 +720,11 @@ const PixiCanvas = ({ castContext }) => {
                 if (!box) {
                     this.move(0, -1);
                     return true;
+                } else {
+                    this.screenY -= imageScale * 2;
                 }
+            } else {
+                this.screenY -= imageScale * 2;
             }
             return false;
         }
@@ -569,7 +741,11 @@ const PixiCanvas = ({ castContext }) => {
                 if (!box) {
                     this.move(0, 1);
                     return true;
+                } else {
+                    this.screenY += imageScale * 2;
                 }
+            } else {
+                this.screenY += imageScale * 2;
             }
             return false;
         }
@@ -588,6 +764,7 @@ const PixiCanvas = ({ castContext }) => {
             this.game = game;
             levelRef.current = this;
             this.originalData = data;
+            this.name = data.name;
             this.gridH = data.blocks.length;
             this.gridW = data.blocks[0].length;
             this.screenW = this.gridW * blockSize;
@@ -630,6 +807,20 @@ const PixiCanvas = ({ castContext }) => {
                 this.boxes[_box].init();
             }
             this.player.init();
+            this.tutorial = null;
+            if (this.name == "000") {
+                this.tutorial = new PIXI.Sprite(spritesheet.current.textures["tutorial1"]);
+                this.tutorial.anchor.set(0.5, 0);
+                this.tutorial.x = 0;
+                this.tutorial.y = this.gridH * tileSize;
+                this.sprite.addChild(this.tutorial);
+            } else if (this.name == "007") {
+                this.tutorial = new PIXI.Sprite(spritesheet.current.textures["tutorial2"]);
+                this.tutorial.anchor.set(0.5, 0);
+                this.tutorial.x = 0;
+                this.tutorial.y = this.gridH * tileSize;
+                this.sprite.addChild(this.tutorial);
+            }
         }
 
         destroy() {
@@ -637,6 +828,9 @@ const PixiCanvas = ({ castContext }) => {
                 this.boxes[_box].destroy();
             }
             this.player.destroy();
+            if (this.tutorial) {
+                this.tutorial.destroy();
+            }
             this.sprite.destroy();
         }
 
@@ -808,7 +1002,7 @@ const PixiCanvas = ({ castContext }) => {
                 view: canvasRef.current,
                 width: 1920,
                 height: 1080,
-                backgroundAlpha: 1,
+                backgroundAlpha: 0,
                 backgroundColor: "#8e3ce1"
             });
             this.state = "niveaux";
@@ -845,19 +1039,19 @@ const PixiCanvas = ({ castContext }) => {
                 self.init();
                 let [hw, hh] = screenCenter();
 
-                this.recommencer = new PIXI.Sprite(spritesheet.current.textures["recommencer2"]);
+                this.recommencer = new PIXI.Sprite(spritesheet.current.textures["recommencer"]);
                 this.recommencer.anchor.set(0, 1);
                 this.recommencer.x = 36;
                 this.recommencer.y = window.innerHeight - 24 + this.showControl;
                 this.app.stage.addChild(this.recommencer);
 
-                this.pause = new PIXI.Sprite(spritesheet.current.textures["pause2"]);
+                this.pause = new PIXI.Sprite(spritesheet.current.textures["pause"]);
                 this.pause.anchor.set(0, 1);
                 this.pause.x = 36 * 2 + 76 * imageScale;
                 this.pause.y = window.innerHeight - 24 + this.showControl;
                 this.app.stage.addChild(this.pause);
 
-                this.bouger = new PIXI.Sprite(spritesheet.current.textures["bouger2"]);
+                this.bouger = new PIXI.Sprite(spritesheet.current.textures["bouger"]);
                 this.bouger.anchor.set(1, 1);
                 this.bouger.x = window.innerWidth - 36;
                 this.bouger.y = window.innerHeight - 24 + this.showControl;
@@ -984,6 +1178,7 @@ const PixiCanvas = ({ castContext }) => {
             this.levelselect.y = this.selectGridY * (levelsblckH + levelsspacing) - 2 * imageScale - this.niveaux.height / 2;
 
             this.level.update(deltaTime);
+            Particle.updateAll(deltaTime);
         }
 
         receiveEvent(cmd, action) {
@@ -1085,23 +1280,6 @@ const PixiCanvas = ({ castContext }) => {
             app.destroy(true, true);
         };
     }, []);
-
-    React.useEffect(() => {
-        dataRef.current.text = "binder";
-        if (!castContext) return;
-        dataRef.current.text = "castContext n'est pas vide";
-
-        const CHANNEL = 'urn:x-cast:testChannel';
-        castContext.addCustomMessageListener(CHANNEL, function (customEvent) {
-            // TODO ici mettre une structure json de votre choix.
-            // document.querySelector("#id").innerHTML = customEvent.data.msg;
-            dataRef.current.text = customEvent.data.cmd;
-            gameRef.current.receiveEvent(customEvent.data.cmd, customEvent.data.action);
-            
-            //castContext.sendCustomMessage(CHANNEL, undefined, msgRetour);
-        });
-
-    }, [castContext]);
 
     // manual events, for testing purposes
     React.useEffect(() => {
